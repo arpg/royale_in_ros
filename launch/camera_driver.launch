@@ -1,5 +1,8 @@
 <launch>
-  <!-- node name: all topics will be advertised under this name -->
+	
+  <arg name="enable_processing" default="true"/>  
+
+<!-- node name: all topics will be advertised under this name -->
   <arg name = "node_name"          default = "royale_camera"/>
 
   <!-- static TF publisher -->
@@ -17,14 +20,14 @@
   </node>
 
   <!-- convert floating point image in mm to grayscale image in m -->
-  <node pkg="nodelet" type="nodelet" name="convert_metric_depth" 
+  <node pkg="nodelet" type="nodelet" name="convert_metric_depth" if="$(arg enable_processing)"
         args="load depth_image_proc/convert_metric $(arg node_name)_manager">
       <remap from="image_raw" to="royale_camera/depth_image"/>
       <remap from="image" to="royale_camera/depth_image_metric"/>
   </node>
 
   <!-- rectify depth image -->
-  <node pkg="nodelet" type="nodelet" name="rectify_depth" 
+  <node pkg="nodelet" type="nodelet" name="rectify_depth" if="$(arg enable_processing)" 
         args="load image_proc/rectify $(arg node_name)_manager">
       <remap from="camera_info" to="royale_camera/camera_info"/>
       <remap from="image_mono" to="royale_camera/depth_image_metric"/>
