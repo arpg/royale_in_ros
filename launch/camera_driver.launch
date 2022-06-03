@@ -10,7 +10,7 @@
         args = "0 0 0 1.57 0 -1.57 $(arg node_name)_link $(arg node_name)_optical_frame 100" />
 
   <!-- nodelet manager -->
-  <node pkg = "nodelet" type = "nodelet" name = "$(arg node_name)_manager" args = "manager" output = "screen"/>
+  <node pkg = "nodelet" type = "nodelet" name = "$(arg node_name)_manager" args = "manager" output = "screen" respawn="true"/>
 
   <!-- camera_driver nodelet -->
   <node pkg = "nodelet" type = "nodelet" name = "$(arg node_name)"
@@ -20,22 +20,38 @@
   </node>
 
   <!-- convert floating point image in mm to grayscale image in m -->
-  <node pkg="nodelet" type="nodelet" name="convert_metric_depth" if="$(arg enable_processing)"
+  <node pkg="nodelet" type="nodelet" name="convert_metric_depth" if="$(arg enable_processing)" respawn="true"
         args="load depth_image_proc/convert_metric $(arg node_name)_manager">
       <remap from="image_raw" to="royale_camera/depth_image"/>
       <remap from="image" to="royale_camera/depth_image_metric"/>
   </node>
 
-  <!-- rectify depth image -->
-  <node pkg="nodelet" type="nodelet" name="rectify_depth" if="$(arg enable_processing)" 
+  <!-- rectify gray image -->
+  <node pkg="nodelet" type="nodelet" name="rectify_gray" if="$(arg enable_processing)" respawn="true"
         args="load image_proc/rectify $(arg node_name)_manager">
       <remap from="camera_info" to="royale_camera/camera_info"/>
-      <remap from="image_mono" to="royale_camera/depth_image_metric"/>
+      <remap from="image_mono" to="royale_camera/gray_image"/>
+      <remap from="image_rect" to="royale_camera/gray_image_rect"/>
+  </node>
+
+  <!-- rectify depth image -->
+  <node pkg="nodelet" type="nodelet" name="rectify_depth" if="$(arg enable_processing)" respawn="true"
+        args="load image_proc/rectify $(arg node_name)_manager">
+      <remap from="camera_info" to="royale_camera/camera_info"/>
+      <remap from="image_mono" to="royale_camera/depth_image"/>
       <remap from="image_rect" to="royale_camera/depth_image_rect"/>
   </node>
 
+  <!-- rectify metric depth image -->
+  <node pkg="nodelet" type="nodelet" name="rectify_metric_depth" if="$(arg enable_processing)" respawn="true"
+        args="load image_proc/rectify $(arg node_name)_manager">
+      <remap from="camera_info" to="royale_camera/camera_info"/>
+      <remap from="image_mono" to="royale_camera/depth_image_metric"/>
+      <remap from="image_rect" to="royale_camera/depth_image_metric_rect"/>
+  </node>
+
   <!-- set exposure mode to automatic -->
-  <node pkg="rostopic" type="rostopic" name="royale_expo_mode_node" 
+  <node pkg="rostopic" type="rostopic" name="royale_expo_mode_node" respawn="true"
     args="pub -r 1 /royale_camera/expo_mode std_msgs/Bool true"/>
 
 </launch>
